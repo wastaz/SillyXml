@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,10 +22,30 @@ namespace SillyXml
             var type = obj.GetType();
             var el = new XElement(type.Name);
 
-            foreach(var property in type.GetRuntimeProperties())
+            if(type.GetTypeInfo().IsValueType)
             {
-                var value = property.GetMethod.Invoke(obj, new object[0]);
-                el.Add(new XElement(property.Name, value));
+                el.Value = obj.ToString();
+            }
+            else
+            { 
+                foreach(var property in type.GetRuntimeProperties())
+                {
+                    var value = property.GetMethod.Invoke(obj, new object[0]);
+                
+                    if(value.GetType() != typeof(string) && value.GetType().GetTypeInfo().ImplementedInterfaces.Contains(typeof(IEnumerable)))
+                    {
+                        var collectionElement = new XElement(property.Name);
+                        foreach(var val in (IEnumerable)value)
+                        {
+                            collectionElement.Add(ToXml(val));
+                        }
+                        el.Add(collectionElement);
+                    }
+                    else
+                    {
+                        el.Add(new XElement(property.Name, value));
+                    }
+                }
             }
             return el;
         }

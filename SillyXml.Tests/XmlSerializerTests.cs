@@ -27,5 +27,16 @@ namespace SillyXml.Tests
             Assert.IsNotNull(str);
         }
 
+        public class ClassWithEnumerable
+        {
+            public IEnumerable<int> Collection { get; } = new List<int> { 42, 15, 22 };
+        }
+
+        [Test]
+        public void Serialize_Class_With_Enumerable()
+        {
+            var str = XmlSerializer.Serialize(new ClassWithEnumerable());
+            Assert.IsNotNull(str);
+        }
     }
 }
