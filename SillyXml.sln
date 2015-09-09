@@ -9,6 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SillyXml.Tests", "SillyXml.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DD986CC5-DD36-4F53-945B-61FC59335C70}"
 	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
 		paket.dependencies = paket.dependencies
 	EndProjectSection
 EndProject

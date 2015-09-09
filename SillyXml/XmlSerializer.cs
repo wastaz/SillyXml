@@ -47,7 +47,8 @@ namespace SillyXml
                     }
                     else
                     {
-                        el.Add(new XElement(property.Name, ToXml(value)));
+                        var xml = ToXml(value);
+                        el.Add(new XElement(property.Name, xml.Elements()));
                     }
                 }
             }
