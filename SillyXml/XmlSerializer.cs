@@ -31,8 +31,12 @@ namespace SillyXml
                 foreach(var property in type.GetRuntimeProperties())
                 {
                     var value = property.GetMethod.Invoke(obj, new object[0]);
-                
-                    if(value.GetType() != typeof(string) && value.GetType().GetTypeInfo().ImplementedInterfaces.Contains(typeof(IEnumerable)))
+
+                    if (value is string || value.GetType().GetTypeInfo().IsPrimitive)
+                    {
+                        el.Add(new XElement(property.Name, value));
+                    }
+                    else if (value.GetType().GetTypeInfo().ImplementedInterfaces.Contains(typeof(IEnumerable)))
                     {
                         var collectionElement = new XElement(property.Name);
                         foreach(var val in (IEnumerable)value)
@@ -43,7 +47,7 @@ namespace SillyXml
                     }
                     else
                     {
-                        el.Add(new XElement(property.Name, value));
+                        el.Add(new XElement(property.Name, ToXml(value)));
                     }
                 }
             }

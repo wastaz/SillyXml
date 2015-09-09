@@ -8,9 +8,6 @@ using NUnit.Framework;
 
 namespace SillyXml.Tests
 {
-
-    
-
     [TestFixture]
     public class XmlSerializerTests
     {
@@ -36,6 +33,19 @@ namespace SillyXml.Tests
         public void Serialize_Class_With_Enumerable()
         {
             var str = XmlSerializer.Serialize(new ClassWithEnumerable());
+            Assert.IsNotNull(str);
+        }
+
+        public class ClassWithNestedObjects
+        {
+            public SimpleClass Monkey { get; } = new SimpleClass();
+            public ClassWithEnumerable Avocado { get; } = new ClassWithEnumerable();
+        }
+
+        [Test]
+        public void Serialize_Class_With_Nested_Objects()
+        {
+            var str = XmlSerializer.Serialize(new ClassWithNestedObjects());
             Assert.IsNotNull(str);
         }
     }
