@@ -13,7 +13,7 @@ namespace SillyXml
         public string DataType { get; set; }
     }
 
-    // Support XmlIgnore
+    // Support Enums
 
     public class XmlSerializer
     {
