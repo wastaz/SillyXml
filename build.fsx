@@ -27,7 +27,10 @@ Target "BuildRelease" (fun _ ->
 )
 
 Target "CreatePackage" (fun _ ->
-    Paket.Pack(fun p -> { p with OutputPath = packagingDir })
+    Paket.Pack(fun p -> 
+        { p with 
+            Version = version
+            OutputPath = packagingDir })
 )
 
 Target "PublishPackage" (fun _ ->
