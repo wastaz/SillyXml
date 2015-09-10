@@ -4,6 +4,7 @@ open Fake
 open Fake.AssemblyInfoFile
 
 let buildDir = "./build/"
+let packagingDir = "./packaging/"
 
 let appReferences = [ "SillyXml/SillyXml.csproj" ]
 
@@ -25,7 +26,17 @@ Target "BuildRelease" (fun _ ->
         |> Log "AppBuild-Output: "
 )
 
+Target "CreatePackage" (fun _ ->
+    Paket.Pack(fun p -> { p with OutputPath = packagingDir })
+)
+
+Target "PublishPackage" (fun _ ->
+    Paket.Push(fun p -> { p with WorkingDir = packagingDir })
+)
+
 "Clean"
 ==> "BuildRelease"
+==> "CreatePackage"
+==> "PublishPackage"
 
 RunTargetOrDefault "BuildRelease"

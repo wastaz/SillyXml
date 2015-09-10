@@ -1,0 +1,15 @@
+type file
+id SillyXML
+version 0.1
+authors Fredrik Forssen
+licenseUrl https://github.com/wastaz/SillyXml/blob/master/LICENSE
+projectUrl https://github.com/wastaz/SillyXml
+copyright Copyright Fredrik Forssen 2015
+tags XML, Serializer
+description
+    XML Serializer for those of us who like immutable objects.
+files
+    build ==> lib
+frameworkAssemblies
+    System.Xml
+    System.Xml.Linq

@@ -4,7 +4,7 @@ using System.Reflection;
 [assembly: AssemblyTitleAttribute("SillyXML")]
 [assembly: AssemblyDescriptionAttribute("SillyXML - Immutable class XML serialization for the people!")]
 [assembly: AssemblyProductAttribute("SillyXML")]
-[assembly: AssemblyCopyrightAttribute("Copyright � 2015 Fredrik Forss�n")]
+[assembly: AssemblyCopyrightAttribute("Copyright 2015 Fredrik Forssen")]
 [assembly: AssemblyVersionAttribute("0.1")]
 [assembly: AssemblyFileVersionAttribute("0.1")]
 namespace System {
