@@ -7,7 +7,6 @@ using NUnit.Framework;
 
 namespace SillyXml.Tests
 {
-    
     public class GenericClass<T>
     {
         public GenericClass(T obj)
@@ -59,6 +58,19 @@ namespace SillyXml.Tests
         public string Bar { get; } = "Baboon";
     }
 
+    public enum MonkeyBreed
+    {
+        None = 0,
+        Baboon,
+        Gorilla,
+        Chimpanzee
+    }
+
+    public class ClassWithEnum
+    {
+        public MonkeyBreed Breed { get; } = MonkeyBreed.Gorilla;
+    }
+
     [TestFixture]
     public class XmlSerializerTests
     {
@@ -89,6 +101,13 @@ namespace SillyXml.Tests
         {
             var str = XmlSerializer.Serialize(3.14m);
             AreEqualDisregardingWhitespace(@"<Decimal>3.14</Decimal>", str);
+        }
+
+        [Test]
+        public void Serialize_Enum()
+        {
+            var str = XmlSerializer.Serialize(new ClassWithEnum());
+            AreEqualDisregardingWhitespace(@"<ClassWithEnum><Breed>Gorilla</Breed></ClassWithEnum>", str);
         }
 
         [Test]

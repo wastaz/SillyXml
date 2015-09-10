@@ -13,8 +13,6 @@ namespace SillyXml
         public string DataType { get; set; }
     }
 
-    // Support Enums
-
     public class XmlSerializer
     {
         public static string Serialize(object obj)
@@ -32,6 +30,10 @@ namespace SillyXml
             if(type.GetTypeInfo().IsPrimitive || type == typeof(string) || type == typeof(decimal))
             {
                 el.Value = Convert.ToString(obj, CultureInfo.InvariantCulture);
+            }
+            else if (typeInfo.IsEnum)
+            {
+                el.Value = Enum.GetName(type, obj);
             }
             else if (type == typeof(DateTime))
             {
