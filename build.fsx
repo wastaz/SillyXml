@@ -8,7 +8,7 @@ let packagingDir = "./packaging/"
 
 let appReferences = [ "SillyXml/SillyXml.csproj" ]
 
-let version = "0.1"
+let version = "0.1.1"
 
 Target "Clean" (fun _ -> 
     CleanDirs [buildDir]
