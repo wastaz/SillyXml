@@ -77,6 +77,13 @@ namespace SillyXml.Tests
         }
 
         [Test]
+        public void Serialize_Decimal()
+        {
+            var str = XmlSerializer.Serialize(3.14m);
+            AreEqualDisregardingWhitespace(@"<Decimal>3.14</Decimal>", str);
+        }
+
+        [Test]
         public void Serialize_Simple_Class()
         {
             var str = XmlSerializer.Serialize(new SimpleClass());

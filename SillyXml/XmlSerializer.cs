@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Xml.Serialization;
 
 namespace SillyXml
@@ -12,6 +12,8 @@ namespace SillyXml
     {
         public string DataType { get; set; }
     }
+
+    // Support XmlIgnore
 
     public class XmlSerializer
     {
@@ -27,9 +29,9 @@ namespace SillyXml
             var typeInfo = type.GetTypeInfo();
             var el = new XElement(NameForType(type));
 
-            if(type.GetTypeInfo().IsPrimitive || type == typeof(string))
+            if(type.GetTypeInfo().IsPrimitive || type == typeof(string) || type == typeof(decimal))
             {
-                el.Value = obj.ToString();
+                el.Value = Convert.ToString(obj, CultureInfo.InvariantCulture);
             }
             else if (type == typeof(DateTime))
             {
