@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
-
+using System.Xml.Serialization;
 using NUnit.Framework;
 
 namespace SillyXml.Tests
@@ -27,11 +29,23 @@ namespace SillyXml.Tests
         public IEnumerable<int> Collection { get; } = new List<int> { 42, 15, 22 };
     }
 
+    public class ClassWithNull
+    {
+        public object NullObject { get; } = null;
+    }
 
     public class ClassWithNestedObjects
     {
         public SimpleClass Monkey { get; } = new SimpleClass();
         public ClassWithEnumerable Avocado { get; } = new ClassWithEnumerable();
+    }
+    
+    public class ClassWithDateTimes
+    {
+        [XmlElement(DataType = "date")]
+        public DateTime AsDate { get; } = DateTime.Parse("2014-02-01");
+
+        public DateTime AsDateAndTime { get; } = DateTime.Parse("2014-02-01T22:15:00");
     }
 
     [TestFixture]
@@ -71,6 +85,20 @@ namespace SillyXml.Tests
         {
             var str = XmlSerializer.Serialize(new ClassWithEnumerable());
             AreEqualDisregardingWhitespace(@"<ClassWithEnumerable><Collection><Int32>42</Int32><Int32>15</Int32><Int32>22</Int32></Collection></ClassWithEnumerable>", str);
+        }
+
+        [Test]
+        public void Seriazlize_Property_With_Null_Value()
+        {
+            var str = XmlSerializer.Serialize(new ClassWithNull());
+            AreEqualDisregardingWhitespace(@"<ClassWithNull><NullObject /></ClassWithNull>", str);
+        }
+
+        [Test]
+        public void Serialize_DateTimes()
+        {
+            var str = XmlSerializer.Serialize(new ClassWithDateTimes());
+            AreEqualDisregardingWhitespace(@"<ClassWithDateTimes><AsDate>2014-02-01</AsDate><AsDateTime>2014-02-01 22:15</AsDateTime></ClassWithDateTimes>", str);
         }
 
         [Test]

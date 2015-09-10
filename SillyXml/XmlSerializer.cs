@@ -24,6 +24,10 @@ namespace SillyXml
             {
                 el.Value = obj.ToString();
             }
+            else if (type == typeof(DateTime))
+            {
+                el.Value = ((DateTime) obj).ToString("yyyy-MM-dd");
+            }
             else if (typeInfo.ImplementedInterfaces.Contains(typeof(IEnumerable)))
             {
                 foreach (var val in (IEnumerable) obj)
@@ -36,10 +40,20 @@ namespace SillyXml
                 foreach(var property in type.GetRuntimeProperties())
                 {
                     var value = property.GetMethod.Invoke(obj, new object[0]);
-                    var element = ToXml(value);
-                    el.Add(element.HasElements
-                        ? new XElement(property.Name, element.Elements())
-                        : new XElement(property.Name, element.Value));
+                    var resultElement = new XElement(property.Name);
+                    if (value != null)
+                    {
+                        var element = ToXml(value);
+                        if (element.HasElements)
+                        {
+                            resultElement.Add(element.Elements());
+                        }
+                        else
+                        {
+                            resultElement.Value = element.Value;
+                        }
+                    }
+                    el.Add(resultElement);
                 }
             }
             return el;
