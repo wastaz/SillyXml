@@ -50,6 +50,12 @@ namespace SillyXml
                 foreach(var property in type.GetRuntimeProperties())
                 {
                     SerializerOptions opt = null;
+                    var ignoreAttr = property.GetCustomAttribute<XmlIgnoreAttribute>();
+                    if (ignoreAttr != null)
+                    {
+                        continue;
+                    }
+
                     var attr = property.GetCustomAttribute<XmlElementAttribute>();
                     if (attr != null)
                     {

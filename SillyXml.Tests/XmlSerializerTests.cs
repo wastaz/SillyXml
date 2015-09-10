@@ -51,6 +51,14 @@ namespace SillyXml.Tests
         public DateTime AsDateAndTime { get; } = DateTime.Parse("2014-02-01T22:15:00");
     }
 
+    public class ClassWithIgnoredProperties
+    {
+        [XmlIgnore]
+        public string Foo { get; } = "Banana";
+
+        public string Bar { get; } = "Baboon";
+    }
+
     [TestFixture]
     public class XmlSerializerTests
     {
@@ -115,6 +123,14 @@ namespace SillyXml.Tests
                     <AsDateAndTime>2014-02-01T22:15:00</AsDateAndTime>
                   </ClassWithDateTimes>", str);
         }
+
+        [Test]
+        public void Serialize_Skips_Ignored_Properties()
+        {
+            var str = XmlSerializer.Serialize(new ClassWithIgnoredProperties());
+            AreEqualDisregardingWhitespace(@"<ClassWithIgnoredProperties><Bar>Baboon</Bar></ClassWithIgnoredProperties>", str);
+        }
+
 
         [Test]
         public void Serialize_Class_With_Nested_Objects()
