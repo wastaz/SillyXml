@@ -43,7 +43,10 @@ namespace SillyXml.Tests
     public class ClassWithDateTimes
     {
         [XmlElement(DataType = "date")]
-        public DateTime AsDate { get; } = DateTime.Parse("2014-02-01");
+        public DateTime AsDate { get; } = DateTime.Parse("2014-02-01T22:15:00");
+
+        [XmlElement(DataType = "time")]
+        public DateTime AsTime { get; } = DateTime.Parse("2014-02-01T22:15:00");
 
         public DateTime AsDateAndTime { get; } = DateTime.Parse("2014-02-01T22:15:00");
     }
@@ -98,7 +101,12 @@ namespace SillyXml.Tests
         public void Serialize_DateTimes()
         {
             var str = XmlSerializer.Serialize(new ClassWithDateTimes());
-            AreEqualDisregardingWhitespace(@"<ClassWithDateTimes><AsDate>2014-02-01</AsDate><AsDateTime>2014-02-01 22:15</AsDateTime></ClassWithDateTimes>", str);
+            AreEqualDisregardingWhitespace(
+                @"<ClassWithDateTimes>
+                    <AsDate>2014-02-01</AsDate>
+                    <AsTime>22:15:00</AsTime>
+                    <AsDateAndTime>2014-02-01T22:15:00</AsDateAndTime>
+                  </ClassWithDateTimes>", str);
         }
 
         [Test]

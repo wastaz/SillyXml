@@ -3,9 +3,16 @@ using System.Collections;
 using System.Linq;
 using System.Xml.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
+using System.Xml.Serialization;
 
 namespace SillyXml
 {
+    internal class SerializerOptions
+    {
+        public string DataType { get; set; }
+    }
+
     public class XmlSerializer
     {
         public static string Serialize(object obj)
@@ -14,7 +21,7 @@ namespace SillyXml
             return root.ToString();
         }
 
-        private static XElement ToXml(object obj)
+        private static XElement ToXml(object obj, SerializerOptions options = null)
         {
             var type = obj.GetType();
             var typeInfo = type.GetTypeInfo();
@@ -26,7 +33,8 @@ namespace SillyXml
             }
             else if (type == typeof(DateTime))
             {
-                el.Value = ((DateTime) obj).ToString("yyyy-MM-dd");
+                var format = DateFormatForOptions(options);
+                el.Value = ((DateTime) obj).ToString(format);
             }
             else if (typeInfo.ImplementedInterfaces.Contains(typeof(IEnumerable)))
             {
@@ -39,11 +47,18 @@ namespace SillyXml
             { 
                 foreach(var property in type.GetRuntimeProperties())
                 {
+                    SerializerOptions opt = null;
+                    var attr = property.GetCustomAttribute<XmlElementAttribute>();
+                    if (attr != null)
+                    {
+                        opt = new SerializerOptions { DataType = attr.DataType, };
+                    }
+
                     var value = property.GetMethod.Invoke(obj, new object[0]);
                     var resultElement = new XElement(property.Name);
                     if (value != null)
                     {
-                        var element = ToXml(value);
+                        var element = ToXml(value, opt);
                         if (element.HasElements)
                         {
                             resultElement.Add(element.Elements());
@@ -75,6 +90,21 @@ namespace SillyXml
                 name += string.Join("And", t.GenericTypeArguments.Select(NameForType).ToArray());
             }
             return name;
+        }
+
+        private static string DateFormatForOptions(SerializerOptions options)
+        {
+            if (options != null)
+            {
+                switch (options.DataType.ToLowerInvariant())
+                {
+                    case "date":
+                        return "yyyy-MM-dd";
+                    case "time":
+                        return "HH:mm:ss";
+                }
+            }
+            return "yyyy-MM-ddTHH:mm:ss";
         }
     }
 }
