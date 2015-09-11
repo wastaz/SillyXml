@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Xml.Serialization;
 
 namespace SillyXml
@@ -28,7 +29,7 @@ namespace SillyXml
             var typeInfo = type.GetTypeInfo();
             var el = new XElement(NameForType(type));
 
-            if(type.GetTypeInfo().IsPrimitive || type == typeof(string) || type == typeof(decimal))
+            if(typeInfo.IsPrimitive || type == typeof(string) || type == typeof(decimal))
             {
                 el.Value = Convert.ToString(obj, CultureInfo.InvariantCulture);
             }
@@ -85,12 +86,30 @@ namespace SillyXml
             return el;
         }
 
+        private static bool IsAnonymousType(Type t, TypeInfo ti)
+        {
+            // This is not a perfect way to detect anonymous classes since they are a compiler feature and not a CLR feature.
+            // It is probably good enough though.
+            // See also Jon Skeets exhaustive answer on anonymous classes: http://stackoverflow.com/a/315186/271746
+            return
+                t.Namespace == null && 
+                ti.IsPublic == false &&
+                t.IsNested == false &&
+                ti.IsGenericType && 
+                ti.IsSealed &&
+                ti.GetCustomAttribute<CompilerGeneratedAttribute>() != null;
+        }
 
         private static string NameForType(Type t)
         {
-            var typeInfo = t.GetTypeInfo();
+            var ti = t.GetTypeInfo();
             var name = t.Name;
-            if (typeInfo.IsGenericType)
+            if (IsAnonymousType(t, ti))
+            {
+                name = "AnonymousTypeOf";
+                name += string.Join("And", t.GenericTypeArguments.Select(NameForType).ToArray());
+            }
+            else if (ti.IsGenericType)
             {
                 var idx = name.IndexOf('`');
                 if (idx != -1)

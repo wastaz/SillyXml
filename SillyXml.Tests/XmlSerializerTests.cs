@@ -170,5 +170,12 @@ namespace SillyXml.Tests
             var str = XmlSerializer.Serialize(new GenericClass<SimpleClass>(new SimpleClass()));
             AreEqualXmlDisregardingWhitespace(@"<GenericClassOfSimpleClass><Contained><Foo>42</Foo><Bar>Banana</Bar></Contained></GenericClassOfSimpleClass>", str);
         }
+
+        [Test]
+        public void Serialize_Anonymous_Class()
+        {
+            var str = XmlSerializer.Serialize(new { Foo = 42, Bar = "Banana" });
+            AreEqualXmlDisregardingWhitespace(@"<AnonymousTypeOfInt32AndString><Foo>42</Foo><Bar>Banana</Bar></AnonymousTypeOfInt32AndString>", str);
+        }
     }
 }
