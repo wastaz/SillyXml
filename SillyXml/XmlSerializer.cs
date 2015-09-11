@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
@@ -21,6 +22,59 @@ namespace SillyXml
             var root = ToXml(obj);
             var doc = new XDocument(new XDeclaration("1.0", "utf-8", "yes"), root);
             return doc.Declaration + Environment.NewLine + root;
+        }
+
+        public static T Deserialize<T>(string xml)
+        {
+            return FromXml<T>(xml);
+        }
+
+        private static T FromXml<T>(string xml)
+        {
+            var type = typeof(T);
+            var xmlDoc = XDocument.Parse(xml);
+            if (xmlDoc.Root == null || xmlDoc.Root.Name.LocalName != NameForType(type))
+            {
+                throw new ArgumentException("Xml cannot be parsed into an object of the type " + type.Name, nameof(xml));
+            }
+
+            if (xmlDoc.Root.HasElements)
+            {
+                var names = new HashSet<string>(xmlDoc.Root.Elements().Select(e => e.Name.LocalName.ToLowerInvariant()));
+
+                int maxScore = -1;
+                ConstructorInfo constructor = null;
+                foreach (var current in type.GetTypeInfo().DeclaredConstructors)
+                {
+                    int score = current.GetParameters().Select(p => p.Name).Count(name => names.Contains(name));
+                    if (score > maxScore && score == current.GetParameters().Length)
+                    {
+                        constructor = current;
+                        maxScore = score;
+                    }
+                }
+                if (constructor != null)
+                {
+                    var elements = xmlDoc.Root.Elements().ToDictionary(e => e.Name.LocalName.ToLowerInvariant(), e => e.Value);
+                    var parameters = constructor.GetParameters().Select(pi => ToType(pi.ParameterType, elements[pi.Name.ToLowerInvariant()])).ToArray();
+                    var obj = constructor.Invoke(parameters);
+                    return (T)obj;
+                }
+            }
+            throw new NotImplementedException();
+        }
+
+        private static object ToType(Type t, string value)
+        {
+            if (t == typeof(string))
+            {
+                return value;
+            }
+            if (t == typeof(int))
+            {
+                return Convert.ToInt32(value);
+            }
+            return value;
         }
 
         private static XElement ToXml(object obj, SerializerOptions options = null)
