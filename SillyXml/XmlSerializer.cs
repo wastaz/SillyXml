@@ -18,7 +18,8 @@ namespace SillyXml
         public static string Serialize(object obj)
         {
             var root = ToXml(obj);
-            return root.ToString();
+            var doc = new XDocument(new XDeclaration("1.0", "utf-8", "yes"), root);
+            return doc.Declaration + Environment.NewLine + root;
         }
 
         private static XElement ToXml(object obj, SerializerOptions options = null)

@@ -74,9 +74,11 @@ namespace SillyXml.Tests
     [TestFixture]
     public class XmlSerializerTests
     {
-        private void AreEqualDisregardingWhitespace(string expected, string actual)
+        private static string Declaration { get; } = @"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes"" ?>";
+
+        private void AreEqualXmlDisregardingWhitespace(string expected, string actual)
         {
-            var normalizedExpected = Regex.Replace(expected, @"\s", "");
+            var normalizedExpected = Regex.Replace(Declaration + expected, @"\s", "");
             var normalizedActual = Regex.Replace(actual, @"\s", "");
 
             Assert.AreEqual(normalizedExpected, normalizedActual);
@@ -86,56 +88,56 @@ namespace SillyXml.Tests
         public void Serialize_Single_Value()
         {
             var str = XmlSerializer.Serialize(42);
-            AreEqualDisregardingWhitespace(@"<Int32>42</Int32>", str);
+            AreEqualXmlDisregardingWhitespace(@"<Int32>42</Int32>", str);
         }
 
         [Test]
         public void Serialize_Single_String()
         {
             var str = XmlSerializer.Serialize("Banana");
-            AreEqualDisregardingWhitespace(@"<String>Banana</String>", str);
+            AreEqualXmlDisregardingWhitespace(@"<String>Banana</String>", str);
         }
 
         [Test]
         public void Serialize_Decimal()
         {
             var str = XmlSerializer.Serialize(3.14m);
-            AreEqualDisregardingWhitespace(@"<Decimal>3.14</Decimal>", str);
+            AreEqualXmlDisregardingWhitespace(@"<Decimal>3.14</Decimal>", str);
         }
 
         [Test]
         public void Serialize_Enum()
         {
             var str = XmlSerializer.Serialize(new ClassWithEnum());
-            AreEqualDisregardingWhitespace(@"<ClassWithEnum><Breed>Gorilla</Breed></ClassWithEnum>", str);
+            AreEqualXmlDisregardingWhitespace(@"<ClassWithEnum><Breed>Gorilla</Breed></ClassWithEnum>", str);
         }
 
         [Test]
         public void Serialize_Simple_Class()
         {
             var str = XmlSerializer.Serialize(new SimpleClass());
-            AreEqualDisregardingWhitespace(@"<SimpleClass><Foo>42</Foo><Bar>Banana</Bar></SimpleClass>", str);
+            AreEqualXmlDisregardingWhitespace(@"<SimpleClass><Foo>42</Foo><Bar>Banana</Bar></SimpleClass>", str);
         }
 
         [Test]
         public void Serialize_Class_With_Enumerable()
         {
             var str = XmlSerializer.Serialize(new ClassWithEnumerable());
-            AreEqualDisregardingWhitespace(@"<ClassWithEnumerable><Collection><Int32>42</Int32><Int32>15</Int32><Int32>22</Int32></Collection></ClassWithEnumerable>", str);
+            AreEqualXmlDisregardingWhitespace(@"<ClassWithEnumerable><Collection><Int32>42</Int32><Int32>15</Int32><Int32>22</Int32></Collection></ClassWithEnumerable>", str);
         }
 
         [Test]
         public void Seriazlize_Property_With_Null_Value()
         {
             var str = XmlSerializer.Serialize(new ClassWithNull());
-            AreEqualDisregardingWhitespace(@"<ClassWithNull><NullObject /></ClassWithNull>", str);
+            AreEqualXmlDisregardingWhitespace(@"<ClassWithNull><NullObject /></ClassWithNull>", str);
         }
 
         [Test]
         public void Serialize_DateTimes()
         {
             var str = XmlSerializer.Serialize(new ClassWithDateTimes());
-            AreEqualDisregardingWhitespace(
+            AreEqualXmlDisregardingWhitespace(
                 @"<ClassWithDateTimes>
                     <AsDate>2014-02-01</AsDate>
                     <AsTime>22:15:00</AsTime>
@@ -147,7 +149,7 @@ namespace SillyXml.Tests
         public void Serialize_Skips_Ignored_Properties()
         {
             var str = XmlSerializer.Serialize(new ClassWithIgnoredProperties());
-            AreEqualDisregardingWhitespace(@"<ClassWithIgnoredProperties><Bar>Baboon</Bar></ClassWithIgnoredProperties>", str);
+            AreEqualXmlDisregardingWhitespace(@"<ClassWithIgnoredProperties><Bar>Baboon</Bar></ClassWithIgnoredProperties>", str);
         }
 
 
@@ -155,7 +157,7 @@ namespace SillyXml.Tests
         public void Serialize_Class_With_Nested_Objects()
         {
             var str = XmlSerializer.Serialize(new ClassWithNestedObjects());
-            AreEqualDisregardingWhitespace(
+            AreEqualXmlDisregardingWhitespace(
                 @"<ClassWithNestedObjects>
                     <Monkey><Foo>42</Foo><Bar>Banana</Bar></Monkey>
                     <Avocado><Collection><Int32>42</Int32><Int32>15</Int32><Int32>22</Int32></Collection></Avocado>
@@ -166,7 +168,7 @@ namespace SillyXml.Tests
         public void Serialize_Generic_Class()
         {
             var str = XmlSerializer.Serialize(new GenericClass<SimpleClass>(new SimpleClass()));
-            AreEqualDisregardingWhitespace(@"<GenericClassOfSimpleClass><Contained><Foo>42</Foo><Bar>Banana</Bar></Contained></GenericClassOfSimpleClass>", str);
+            AreEqualXmlDisregardingWhitespace(@"<GenericClassOfSimpleClass><Contained><Foo>42</Foo><Bar>Banana</Bar></Contained></GenericClassOfSimpleClass>", str);
         }
     }
 }
