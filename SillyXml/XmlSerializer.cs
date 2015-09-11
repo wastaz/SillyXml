@@ -55,7 +55,8 @@ namespace SillyXml
                 {
                     SerializerOptions opt = null;
                     var ignoreAttr = property.GetCustomAttribute<XmlIgnoreAttribute>();
-                    if (ignoreAttr != null)
+                    var isStatic = property.GetMethod.IsStatic;
+                    if (ignoreAttr != null || isStatic)
                     {
                         continue;
                     }

@@ -16,7 +16,12 @@ namespace SillyXml.Tests
 
         public T Contained { get; }
     }
-    
+
+    public class ClassWithStaticProperty
+    {
+        public static string Foo { get; } = "Baboon";
+    }
+
     public class SimpleClass
     {
         public int Foo { get; } = 42;
@@ -176,6 +181,13 @@ namespace SillyXml.Tests
         {
             var str = XmlSerializer.Serialize(new { Foo = 42, Bar = "Banana" });
             AreEqualXmlDisregardingWhitespace(@"<AnonymousTypeOfInt32AndString><Foo>42</Foo><Bar>Banana</Bar></AnonymousTypeOfInt32AndString>", str);
+        }
+
+        [Test]
+        public void Serialize_Ignores_Static_Properties_Of_The_Class()
+        {
+            var str = XmlSerializer.Serialize(new ClassWithStaticProperty());
+            AreEqualXmlDisregardingWhitespace(@"<ClassWithStaticProperty />", str);
         }
     }
 }
