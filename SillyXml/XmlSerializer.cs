@@ -32,6 +32,11 @@ namespace SillyXml
         private static T FromXml<T>(string xml)
         {
             var type = typeof(T);
+            return (T) FromXml(type, xml);
+        }
+
+        private static object FromXml(Type type, string xml)
+        {
             var xmlDoc = XDocument.Parse(xml);
             if (xmlDoc.Root == null || xmlDoc.Root.Name.LocalName != NameForType(type))
             {
@@ -55,26 +60,28 @@ namespace SillyXml
                 }
                 if (constructor != null)
                 {
-                    var elements = xmlDoc.Root.Elements().ToDictionary(e => e.Name.LocalName.ToLowerInvariant(), e => e.Value);
+                    var elements = xmlDoc.Root.Elements().ToDictionary(e => e.Name.LocalName.ToLowerInvariant());
                     var parameters = constructor.GetParameters().Select(pi => ToType(pi.ParameterType, elements[pi.Name.ToLowerInvariant()])).ToArray();
                     var obj = constructor.Invoke(parameters);
-                    return (T)obj;
+                    return obj;
                 }
             }
             throw new NotImplementedException();
         }
 
-        private static object ToType(Type t, string value)
+        private static object ToType(Type t, XElement node)
         {
             if (t == typeof(string))
             {
-                return value;
+                return node.Value;
             }
             if (t == typeof(int))
             {
-                return Convert.ToInt32(value);
+                return Convert.ToInt32(node.Value);
             }
-            return value;
+
+            node.Name = NameForType(t);
+            return FromXml(t, node.ToString());
         }
 
         private static XElement ToXml(object obj, SerializerOptions options = null)

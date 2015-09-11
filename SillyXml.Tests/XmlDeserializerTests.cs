@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,16 @@ namespace SillyXml.Tests
         public string Bar { get; }
     }
 
+    public class SimpleNestedDeserializationClass
+    {
+        public SimpleNestedDeserializationClass(SimpleDeserializationClass contained)
+        {
+            Contained = contained;
+        }
+
+        public SimpleDeserializationClass Contained { get; }
+    }
+
     [TestFixture]
     public class XmlDeserializerTests
     {
@@ -32,6 +43,17 @@ namespace SillyXml.Tests
             Assert.IsNotNull(actual);
             Assert.AreEqual(42, actual.Foo);
             Assert.AreEqual("Banana", actual.Bar);
+        }
+
+        [Test]
+        public void Deserialize_Simple_Nested_Class()
+        {
+            var xml = Declaration + @"<SimpleNestedDeserializationClass><Contained><Foo>42</Foo><Bar>Banana</Bar></Contained></SimpleNestedDeserializationClass>";
+            var actual = XmlSerializer.Deserialize<SimpleNestedDeserializationClass>(xml);
+            Assert.IsNotNull(actual);
+            Assert.IsNotNull(actual.Contained);
+            Assert.AreEqual(42, actual.Contained.Foo);
+            Assert.AreEqual("Banana", actual.Contained.Bar);
         }
     }
 }
