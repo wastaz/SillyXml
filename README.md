@@ -12,7 +12,7 @@ With C#6 we can finally write immutable classes without going insane by using th
         public string Fruit { get; }
     }
     
-However if we try to serialize this class with the `XmlSerializer` class in the standard library it won't work since it doesnt't have a parameterless constructor and since the property has no setters - so we're forced to add those or create a separate class just for the serialization. Both of these options feel pretty bad - and thus this library was born.
+However if we try to serialize this class with the `XmlSerializer` class in the standard library it won't work since it doesn't have a parameterless constructor and since the property has no setters - so we're forced to add those or create a separate class just for the serialization. Both of these options feel pretty bad - and thus this library was born.
 
 ## Getting started
 
