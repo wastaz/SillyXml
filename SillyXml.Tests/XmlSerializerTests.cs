@@ -36,6 +36,11 @@ namespace SillyXml.Tests
         public IEnumerable<int> Collection { get; } = new List<int> { 42, 15, 22 };
     }
 
+    public class ClassWithArrayEnumerable
+    {
+        public IEnumerable<int> Collection { get; } = new List<int> { 42, 15, 22 }.ToArray();
+    }
+
     public class ClassWithNull
     {
         public object NullObject { get; } = null;
@@ -179,6 +184,13 @@ namespace SillyXml.Tests
         {
             var str = XmlSerializer.Serialize(new ClassWithEnumerable());
             AreEqualXmlDisregardingWhitespace(@"<ClassWithEnumerable><Collection><Int32>42</Int32><Int32>15</Int32><Int32>22</Int32></Collection></ClassWithEnumerable>", str);
+        }
+
+        [Test]
+        public void Serialize_Class_With_Array_Enumerable()
+        {
+            var str = XmlSerializer.Serialize(new ClassWithArrayEnumerable());
+            AreEqualXmlDisregardingWhitespace(@"<ClassWithArrayEnumerable><Collection><Int32>42</Int32><Int32>15</Int32><Int32>22</Int32></Collection></ClassWithArrayEnumerable>", str);
         }
 
         [Test]
