@@ -6,12 +6,18 @@ using System.Xml.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml.Serialization;
+using System.Xml;
+using System.Xml.Schema;
 
 namespace SillyXml
 {
     internal class SerializerOptions
     {
         public string DataType { get; set; }
+    }
+    public interface IXmlWritable
+    {
+        XNode WriteXml();
     }
 
     public class XmlSerializer
@@ -23,6 +29,12 @@ namespace SillyXml
             return doc.Declaration + Environment.NewLine + root;
         }
 
+        private static XNode ToXmlNode(object obj, SerializerOptions opt)
+        {
+            var writable = obj as IXmlWritable;
+            if (writable != null) { return writable.WriteXml(); }
+            return ToXml(obj, opt);
+        }
         private static XElement ToXml(object obj, SerializerOptions options = null)
         {
             var type = obj.GetType();
@@ -71,14 +83,23 @@ namespace SillyXml
                     var resultElement = new XElement(property.Name);
                     if (value != null)
                     {
-                        var element = ToXml(value, opt);
-                        if (element.HasElements)
+                        var element = ToXmlNode(value, opt);
+
+                        var xelem = element as XElement;
+                        if (xelem != null)
                         {
-                            resultElement.Add(element.Elements());
+                            if (xelem.HasElements)
+                            {
+                                resultElement.Add(xelem.Elements());
+                            }
+                            else
+                            {
+                                resultElement.Value = xelem.Value;
+                            }
                         }
                         else
                         {
-                            resultElement.Value = element.Value;
+                            resultElement.Add(element);
                         }
                     }
                     el.Add(resultElement);
