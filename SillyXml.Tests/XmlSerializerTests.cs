@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using NUnit.Framework;
+using System.Xml.Schema;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace SillyXml.Tests
 {
@@ -75,6 +78,53 @@ namespace SillyXml.Tests
     {
         public MonkeyBreed Breed { get; } = MonkeyBreed.Gorilla;
     }
+
+    public class ClassContainingValueType
+    {
+        public ValueType Id { get; }
+        public ClassContainingValueType(ValueType id)
+        {
+            Id = id;
+        }
+    }
+
+    public struct ValueType : IEquatable<ValueType>, IXmlWritable
+    {
+        public int Value { get; }
+
+        public ValueType(int value)
+        {
+            this.Value = value;
+        }
+
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
+
+        public bool Equals(ValueType obj)
+        {
+            return obj.Value == Value;
+        }
+        public override int GetHashCode()
+        {
+            return Value.GetHashCode();
+        }
+        public override bool Equals(object obj)
+        {
+            if (obj is ValueType)
+            {
+                return base.Equals((ValueType)obj);
+            }
+            return false;
+        }
+
+        public XNode WriteXml()
+        {
+            return new XText(Value.ToString());
+        }
+    }
+
 
     [TestFixture]
     public class XmlSerializerTests
@@ -188,6 +238,13 @@ namespace SillyXml.Tests
         {
             var str = XmlSerializer.Serialize(new ClassWithStaticProperty());
             AreEqualXmlDisregardingWhitespace(@"<ClassWithStaticProperty />", str);
+        }
+
+        [Test]
+        public void Serialize_value_type()
+        {
+            var str = XmlSerializer.Serialize(new ClassContainingValueType( new ValueType(12) ));
+            AreEqualXmlDisregardingWhitespace(@"<ClassContainingValueType><Id>12</Id></ClassContainingValueType>", str);
         }
     }
 }
