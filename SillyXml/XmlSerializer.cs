@@ -140,6 +140,11 @@ namespace SillyXml
                 }
                 name += "Of";
                 name += string.Join("And", t.GenericTypeArguments.Select(NameForType).ToArray());
+            }else if (ti.IsArray)
+            {
+                name = "Array";
+                name += "Of";
+                name += string.Join("And", t.GenericTypeArguments.Select(NameForType).ToArray());
             }
             return name;
         }
