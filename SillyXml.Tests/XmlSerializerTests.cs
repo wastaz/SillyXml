@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using NUnit.Framework;
 using System.Xml.Schema;
@@ -124,9 +125,9 @@ namespace SillyXml.Tests
             return false;
         }
 
-        public XNode WriteXml()
+        public async Task WriteXml(XmlWriter writer)
         {
-            return new XText(Value.ToString());
+            await writer.WriteStringAsync(Value.ToString());
         }
     }
 
@@ -145,65 +146,65 @@ namespace SillyXml.Tests
         }
 
         [Test]
-        public void Serialize_Single_Value()
+        public async Task Serialize_Single_Value()
         {
-            var str = XmlSerializer.Serialize(42);
+            var str = await XmlSerializer.Serialize(42);
             AreEqualXmlDisregardingWhitespace(@"<Int32>42</Int32>", str);
         }
 
         [Test]
-        public void Serialize_Single_String()
+        public async Task Serialize_Single_String()
         {
-            var str = XmlSerializer.Serialize("Banana");
+            var str = await XmlSerializer.Serialize("Banana");
             AreEqualXmlDisregardingWhitespace(@"<String>Banana</String>", str);
         }
 
         [Test]
-        public void Serialize_Decimal()
+        public async Task Serialize_Decimal()
         {
-            var str = XmlSerializer.Serialize(3.14m);
+            var str = await XmlSerializer.Serialize(3.14m);
             AreEqualXmlDisregardingWhitespace(@"<Decimal>3.14</Decimal>", str);
         }
 
         [Test]
-        public void Serialize_Enum()
+        public async Task Serialize_Enum()
         {
-            var str = XmlSerializer.Serialize(new ClassWithEnum());
+            var str = await XmlSerializer.Serialize(new ClassWithEnum());
             AreEqualXmlDisregardingWhitespace(@"<ClassWithEnum><Breed>Gorilla</Breed></ClassWithEnum>", str);
         }
 
         [Test]
-        public void Serialize_Simple_Class()
+        public async Task Serialize_Simple_Class()
         {
-            var str = XmlSerializer.Serialize(new SimpleClass());
+            var str = await XmlSerializer.Serialize(new SimpleClass());
             AreEqualXmlDisregardingWhitespace(@"<SimpleClass><Foo>42</Foo><Bar>Banana</Bar></SimpleClass>", str);
         }
 
         [Test]
-        public void Serialize_Class_With_Enumerable()
+        public async Task Serialize_Class_With_Enumerable()
         {
-            var str = XmlSerializer.Serialize(new ClassWithEnumerable());
+            var str = await XmlSerializer.Serialize(new ClassWithEnumerable());
             AreEqualXmlDisregardingWhitespace(@"<ClassWithEnumerable><Collection><Int32>42</Int32><Int32>15</Int32><Int32>22</Int32></Collection></ClassWithEnumerable>", str);
         }
 
         [Test]
-        public void Serialize_Class_With_Array_Enumerable()
+        public async Task Serialize_Class_With_Array_Enumerable()
         {
-            var str = XmlSerializer.Serialize(new ClassWithArrayEnumerable());
+            var str = await XmlSerializer.Serialize(new ClassWithArrayEnumerable());
             AreEqualXmlDisregardingWhitespace(@"<ClassWithArrayEnumerable><Collection><Int32>42</Int32><Int32>15</Int32><Int32>22</Int32></Collection></ClassWithArrayEnumerable>", str);
         }
 
         [Test]
-        public void Seriazlize_Property_With_Null_Value()
+        public async Task Seriazlize_Property_With_Null_Value()
         {
-            var str = XmlSerializer.Serialize(new ClassWithNull());
+            var str = await XmlSerializer.Serialize(new ClassWithNull());
             AreEqualXmlDisregardingWhitespace(@"<ClassWithNull><NullObject /></ClassWithNull>", str);
         }
 
         [Test]
-        public void Serialize_DateTimes()
+        public async Task Serialize_DateTimes()
         {
-            var str = XmlSerializer.Serialize(new ClassWithDateTimes());
+            var str = await XmlSerializer.Serialize(new ClassWithDateTimes());
             AreEqualXmlDisregardingWhitespace(
                 @"<ClassWithDateTimes>
                     <AsDate>2014-02-01</AsDate>
@@ -213,17 +214,17 @@ namespace SillyXml.Tests
         }
 
         [Test]
-        public void Serialize_Skips_Ignored_Properties()
+        public async Task Serialize_Skips_Ignored_Properties()
         {
-            var str = XmlSerializer.Serialize(new ClassWithIgnoredProperties());
+            var str = await XmlSerializer.Serialize(new ClassWithIgnoredProperties());
             AreEqualXmlDisregardingWhitespace(@"<ClassWithIgnoredProperties><Bar>Baboon</Bar></ClassWithIgnoredProperties>", str);
         }
 
 
         [Test]
-        public void Serialize_Class_With_Nested_Objects()
+        public async Task Serialize_Class_With_Nested_Objects()
         {
-            var str = XmlSerializer.Serialize(new ClassWithNestedObjects());
+            var str = await XmlSerializer.Serialize(new ClassWithNestedObjects());
             AreEqualXmlDisregardingWhitespace(
                 @"<ClassWithNestedObjects>
                     <Monkey><Foo>42</Foo><Bar>Banana</Bar></Monkey>
@@ -232,30 +233,30 @@ namespace SillyXml.Tests
         }
 
         [Test]
-        public void Serialize_Generic_Class()
+        public async Task Serialize_Generic_Class()
         {
-            var str = XmlSerializer.Serialize(new GenericClass<SimpleClass>(new SimpleClass()));
+            var str = await XmlSerializer.Serialize(new GenericClass<SimpleClass>(new SimpleClass()));
             AreEqualXmlDisregardingWhitespace(@"<GenericClassOfSimpleClass><Contained><Foo>42</Foo><Bar>Banana</Bar></Contained></GenericClassOfSimpleClass>", str);
         }
 
         [Test]
-        public void Serialize_Anonymous_Class()
+        public async Task  Serialize_Anonymous_Class()
         {
-            var str = XmlSerializer.Serialize(new { Foo = 42, Bar = "Banana" });
+            var str = await XmlSerializer.Serialize(new { Foo = 42, Bar = "Banana" });
             AreEqualXmlDisregardingWhitespace(@"<AnonymousTypeOfInt32AndString><Foo>42</Foo><Bar>Banana</Bar></AnonymousTypeOfInt32AndString>", str);
         }
 
         [Test]
-        public void Serialize_Ignores_Static_Properties_Of_The_Class()
+        public async Task Serialize_Ignores_Static_Properties_Of_The_Class()
         {
-            var str = XmlSerializer.Serialize(new ClassWithStaticProperty());
+            var str = await XmlSerializer.Serialize(new ClassWithStaticProperty());
             AreEqualXmlDisregardingWhitespace(@"<ClassWithStaticProperty />", str);
         }
 
         [Test]
-        public void Serialize_value_type()
+        public async Task Serialize_value_type()
         {
-            var str = XmlSerializer.Serialize(new ClassContainingValueType( new ValueType(12) ));
+            var str = await XmlSerializer.Serialize(new ClassContainingValueType( new ValueType(12) ));
             AreEqualXmlDisregardingWhitespace(@"<ClassContainingValueType><Id>12</Id></ClassContainingValueType>", str);
         }
     }

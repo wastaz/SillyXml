@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
+using System.IO;
 using System.Linq;
-using System.Xml.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using System.Xml;
-using System.Xml.Schema;
 
 namespace SillyXml
 {
@@ -15,50 +15,77 @@ namespace SillyXml
     {
         public string DataType { get; set; }
     }
+
     public interface IXmlWritable
     {
-        XNode WriteXml();
+        Task WriteXml(XmlWriter writer);
     }
 
     public class XmlSerializer
     {
-        public static string Serialize(object obj)
+        public static async Task<string> Serialize(object obj)
         {
-            var root = ToXml(obj);
-            var doc = new XDocument(new XDeclaration("1.0", "utf-8", "yes"), root);
-            return doc.Declaration + Environment.NewLine + root;
+            using (var str = new MemoryStream()) { 
+                await SerializeToStream(obj, str);
+
+                str.Position = 0;
+                using (var reader = new StreamReader(str))
+                {
+                    return await reader.ReadToEndAsync();
+                }
+            }
         }
 
-        private static XNode ToXmlNode(object obj, SerializerOptions opt)
+        public static async Task SerializeToStream(object obj, Stream stream)
+        {
+            using (var writer = XmlWriter.Create(stream, new XmlWriterSettings() { Async = true, OmitXmlDeclaration = false }))
+            {
+                await writer.WriteStartDocumentAsync(true);
+
+                var type = obj.GetType();
+                var nameForType = NameForType(type);
+                await writer.WriteStartElementAsync(null, nameForType, null);
+                await ToXml(obj, writer);
+                await writer.WriteEndElementAsync();
+            }
+        }
+
+        private static async Task ToXmlNode(object obj, XmlWriter writer, SerializerOptions opt)
         {
             var writable = obj as IXmlWritable;
-            if (writable != null) { return writable.WriteXml(); }
-            return ToXml(obj, opt);
+            if (writable != null)
+            {
+                await writable.WriteXml(writer);
+                return;
+            }
+            await ToXml(obj, writer, opt);
         }
-        private static XElement ToXml(object obj, SerializerOptions options = null)
+
+        private static async Task ToXml(object obj, XmlWriter writer, SerializerOptions options = null)
         {
             var type = obj.GetType();
             var typeInfo = type.GetTypeInfo();
-            var el = new XElement(NameForType(type));
 
-            if(typeInfo.IsPrimitive || type == typeof(string) || type == typeof(decimal))
+            if (typeInfo.IsPrimitive || type == typeof(string) || type == typeof(decimal))
             {
-                el.Value = Convert.ToString(obj, CultureInfo.InvariantCulture);
+                await writer.WriteStringAsync(Convert.ToString(obj, CultureInfo.InvariantCulture));
             }
             else if (typeInfo.IsEnum)
             {
-                el.Value = Enum.GetName(type, obj);
+                await writer.WriteStringAsync(Enum.GetName(type, obj));
             }
             else if (type == typeof(DateTime))
             {
                 var format = DateFormatForOptions(options);
-                el.Value = ((DateTime) obj).ToString(format);
+                await writer.WriteStringAsync(((DateTime)obj).ToString(format));
             }
             else if (typeInfo.ImplementedInterfaces.Contains(typeof(IEnumerable)))
             {
                 foreach (var val in (IEnumerable) obj)
                 {
-                    el.Add(ToXml(val));
+                    await writer.WriteStartElementAsync(null, NameForType(val.GetType()), null);
+                    await ToXml(val, writer);
+                    await writer.WriteEndElementAsync();
                 }
             }
             else
@@ -80,32 +107,15 @@ namespace SillyXml
                     }
 
                     var value = property.GetMethod.Invoke(obj, new object[0]);
-                    var resultElement = new XElement(property.Name);
+                    await writer.WriteStartElementAsync(null, property.Name, null);
                     if (value != null)
                     {
-                        var element = ToXmlNode(value, opt);
-
-                        var xelem = element as XElement;
-                        if (xelem != null)
-                        {
-                            if (xelem.HasElements)
-                            {
-                                resultElement.Add(xelem.Elements());
-                            }
-                            else
-                            {
-                                resultElement.Value = xelem.Value;
-                            }
-                        }
-                        else
-                        {
-                            resultElement.Add(element);
-                        }
+                        await ToXmlNode(value, writer, opt);
                     }
-                    el.Add(resultElement);
+                    await writer.WriteEndElementAsync();
                 }
             }
-            return el;
+
         }
 
         private static bool IsAnonymousType(Type t, TypeInfo ti)
